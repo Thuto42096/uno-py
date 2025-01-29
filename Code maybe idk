@@ -1,0 +1,21 @@
+
+def buildDeck():
+    deck=[]
+    colours = ["red", "green", "blue" , "yellow"]
+    numbers = [1,2,3,4,5,6,7,8,9,0, "skip", "reverse", "drawtwo"]	
+    wildcards = ["wild", "drawfour"]
+    for i in range (len(numbers)):
+        for j in range (len(colours)):
+            deck.append((colours[j],numbers[i]))
+            if numbers[i] != 0:
+                deck.append((colours[j],numbers[i]))
+    for i in range (len(wildcards)):
+        for j in range (4):
+            deck.append((wildcards[i],0))
+    return deck
+
+def shuffleDeck(deck):
+    import random
+    random.shuffle(deck)
+    return deck
+
