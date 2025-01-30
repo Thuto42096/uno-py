@@ -1,4 +1,7 @@
+#uno.py v2
 
+# create a deck of 108 uno cards
+ 
 def buildDeck():
     deck=[]
     colours = ["red", "green", "blue" , "yellow"]
@@ -10,12 +13,36 @@ def buildDeck():
             if numbers[i] != 0:
                 deck.append((colours[j],numbers[i]))
     for i in range (len(wildcards)):
-        for j in range (4):
+        for j in range (len(colours)):
             deck.append((wildcards[i],0))
     return deck
+
+#shuffle the deck
 
 def shuffleDeck(deck):
     import random
     random.shuffle(deck)
     return deck
+
+#deal 7 cards to players
+
+def dealCards(deck, numPlayers):
+    hand=[]
+    for i in range (numPlayers):
+        hand.append([])
+        for j in range (7):
+            hand[i].append(deck.pop(0))
+    return hand, deck
+
+#after cards are dealt, the top card of the deck is placed face up, and the deck is now the draw pile
+#the first player is chosen randomly
+#the first player must play a card that matches the top card of the discard pile in either number or colour
+#or play a wild card
+#the player can also play a wild draw four card
+#the player can also draw a card from the draw pile
+#the player can also pass
+
+def playGame():
+    if 
+
 
