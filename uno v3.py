@@ -1,6 +1,6 @@
-#uno game
+import random
 
-#create deck of cards
+
 def buildDeck():
     deck = []
     colours = ["red", "green", "blue", "yellow"]
@@ -9,43 +9,47 @@ def buildDeck():
     wildcards = ["wild", "drawfour"]
     for i in range(len(numbers)):
         for j in range(len(colours)):
-            deck.append((colours[j], numbers[i]))
+            deck.append(colours[j] + " " + str(numbers[i]))
             if numbers[i] != 0:
-                deck.append((colours[j], numbers[i]))
+                deck.append(colours[j] + " " + str(numbers[i]))
 
-    for actioncard in actioncards:
-        for _ in range(2):
+#    for actioncard in actioncards:
+
+    for _ in range(2):
+        for i in range(len(actioncards)):
             for j in range(len(colours)):
-                deck.append((actioncards, 0))
+                deck.append(colours[j] +" "+ actioncards[i] )
 
     for wildcard in wildcards:
         for _ in range(4):
-            deck.append((wildcard, 0))
-
+            deck.append(wildcard,)
+    
     return deck
 
-#special cards function
+#special cards func
 def specialcards(card, current_player, players, deck, discarded, direction):
     next_player = (current_player + direction) % len(players)
-
-    if card[0] == "draw2":
+    card_type = card.split()[1] if " " in card else card
+    
+    if card_type == "draw2":
         for _ in range(2):
-            drawn_card = drawpile(deck, players, discarded, list(players.keys())[next_player])
+            drawn_card = deck.pop()
+            #drawn_card = drawpile(deck, players, discarded, list(players.keys())[next_player])
             if drawn_card:
-                players[list(players.keys())[next_player]].append(drawn_card)
-        print(f"Player {list(players.keys())[next_player]} drew 2 cards")
-        return (next_player + direction) % len(players)  # Skip the next player's turn
+                players[next_player].append(drawn_card)
+        print(f"Player {next_player} drew 2 cards")
+        return (next_player + direction) % len(players) , deck  # Skip the next player's turn
 
-    elif card[0] == "reverse":
+    elif card_type == "reverse":
         direction = -direction
         print(f"Player {list(players.keys())[current_player]} reversed the direction")
         return current_player, direction
 
-    elif card[0] == "skip":
+    elif card_type == "skip":
         print(f"Player {list(players.keys())[next_player]} was skipped")
         return (next_player + direction) % len(players)  # Skip the next player
 
-    elif card[0] == "wild":
+    elif card_type == "wild":
         colors = ["red", "green", "blue", "yellow"]
         while True:
             new_color = input("Choose a color (red/green/blue/yellow): ").lower()
@@ -55,12 +59,13 @@ def specialcards(card, current_player, players, deck, discarded, direction):
         print(f"Color changed to {new_color}")
         return current_player, new_color  # Return the new color
 
-    elif card[0] == "drawfour":
+    elif card_type == "drawfour":
         for _ in range(4):
-            drawn_card = drawpile(deck, players, discarded, list(players.keys())[next_player])
+            drawn_card = deck.pop()
+            #drawn_card = drawpile(deck, players, discarded, list(players.keys())[next_player])
             if drawn_card:
-                players[list(players.keys())[next_player]].append(drawn_card)
-        print(f"Player {list(players.keys())[next_player]} drew 4 cards")
+                players[next_player].append(drawn_card)
+        print(f"Player {next_player} drew 4 cards")
         colors = ["red", "green", "blue", "yellow"]
         while True:
             new_color = input("Choose a color (red/green/blue/yellow): ").lower()
@@ -72,15 +77,17 @@ def specialcards(card, current_player, players, deck, discarded, direction):
 
     return current_player  # if it's not a special card, return the current player
 
-#shuffle deck
+
 def shuffleDeck(deck):
     import random
     random.shuffle(deck)
     return deck
 
+
 #enter number of players
 def enterPlayers():
     players = {}
+    print("#"*100)
     num_players = int(input("Enter number of players: "))
 
     if num_players < 2 or num_players > 7:
@@ -90,14 +97,17 @@ def enterPlayers():
     num_human_players = 0
     for i in range(num_players):
         while True:
+            print("#"*100)
             player_type = input(f"Is player {i+1} human or computer? (h/c): ").lower()
 
             if player_type == 'h':
+                print("#"*100)
                 player_name = input(f"Enter Player {i+1} name: ")
                 num_human_players += 1
                 break
 
             elif player_type == 'c':
+                print("#"*100)
                 player_name = f"Computer_{i+1}"
                 break
 
@@ -109,41 +119,28 @@ def enterPlayers():
 
     return players
 
-#deal a hand to players
-def dealHands(deck, players):
-    for _ in range(7):
-        for player in players:
-            if deck:  # to check if there are still cards in the deck
-                players[player].append(deck.pop())
-    return players
 
-#drawpile is cards remaining after a hand is dealt
-#draw a card from the drawpile
-def drawpile(deck, players, discarded, player):
+def dealHands(deck, players):
+    for player_name in players:
+        for _ in range(7):
+            players[player_name].append(deck.pop())
+    return players, deck
+
+def drawpile(deck, discarded):
+
     if not deck:
         deck = refill_deck(discarded)
 
         if not deck:
             print("No more cards available.")
             return None
-    drawn_card = deck.pop()
-    print(f"Player {player} drew a card from the drawpile")
-    return drawn_card
+    return deck.pop()
 
-#discardpile is cards played and keeps the top card in play
-def discardpile(deck, players):
-    discarded = []
-    for player in players:
-        print(f"Player {player}, your hand is: {players[player]}")
-        discard = input("Enter the card you want to play: ")
-        if discard in players[player]:
-            players[player].remove(discard)
-            discarded.append(discard)
-            print(f"Player {player} played {discard}")
-            break
-        else:
-            print("!!!Invalid card!!!")
-    return discarded
+
+def discardpile(deck, discarded):
+    return discarded, deck
+#discarded = []
+    
 
 def refill_deck(discarded):
     if not discarded:
@@ -153,123 +150,171 @@ def refill_deck(discarded):
     # keep the top card from the discard pile
     top_card = discarded.pop()
     # shuffle remaining cards
-    new_deck = shuffleDeck(discarded)
+    deck = shuffleDeck(discarded)
     print("shuffling cards...")
 
     # add the top card from the drawpile to the new deck
     discarded.clear()
     discarded.append(top_card)
-    return new_deck
+    return deck
 
 #player actions
-def playeractions(players, discardpile, drawpile, player, discarded):
-    if player.startswith("Computer_"):
-        return computer_action(players, discardpile, drawpile, player)
+def playeractions(players, discarded, drawpile, player_hand, player_name):
+    #if player_name.startswith("Computer_"):
+    #    return computer_action(players, discarded, drawpile, player_hand, player_name)
 
     while True:
-        print(f"Player {player}, your hand is: {players[player]}")
+        print(f"Player {player_name}, your hand is: {player_hand}")
         action = input("Enter 'draw', 'play', or 'pass': ")
+
         if action == "draw":
-            drawn_card = drawpile(drawpile, players, discarded, player)  # Pass the correct arguments to drawpile
+
+           #drawn_card = drawpile(deck, players, discarded)
+            drawn_card = deck.pop()
             if drawn_card:
-                players[player].append(drawn_card)
-            else:
-                print("No cards left to draw!")
+                player_hand.append(drawn_card)
+                print(f"Player {player_name} drew {drawn_card} from the drawpile")
+            return player_hand, discarded
+
 
         elif action == "play":
             card_to_play = input("Enter the card you want to play: ")
 
-            if can_play_card(card_to_play, discardpile[-1]):
-                players[player].remove(card_to_play)
-                discardpile.append(card_to_play)
-                print(f"{player} played {card_to_play}")
-                if card_to_play[0] in ["draw2", "reverse", "skip", "wild", "drawfour"]:
-                    return "special cards"
-                break
+            if can_play_card(player_hand, discarded):
+                player_hand.remove(card_to_play)
+                discarded.append(card_to_play)
+                print(f"{player_name} played {card_to_play}")
+
+                #if card_to_play.split()[0] in ["draw2", "reverse", "skip", "wild", "drawfour"]:
+                #    specialcards(card_to_play, players, deck, discarded, direction)
+                #    return "special cards"
+                return players, player_hand, discarded      
             else:
                 print("Invalid card. Please choose a valid card to play.")
 
         elif action == "pass":
+        #    return (next_player) % len(players)
+
             break
         else:
             print("Invalid action. Please enter 'draw', 'play', or 'pass'.")
 
-def computer_action(players, discardpile, drawpile, player):
-    import random
-    playable_cards = [card for card in players[player] if can_play_card(card, discardpile[-1])]
-    if playable_cards:
-        card_to_play = random.choice(playable_cards)
-        players[player].remove(card_to_play)
-        discardpile.append(card_to_play)
-        print(f"{player} played {card_to_play}")
-        if card_to_play[0] in ["draw2", "reverse", "skip", "wild", "drawfour"]:
-            return "special cards"
-    else:
-        drawn_card = drawpile(drawpile, players, discardpile, player)
-        if drawn_card:
-            players[player].append(drawn_card)
-            print(f"{player} drew a card")
+
+
+def computer_action(players, player_hand, discarded, deck, player_name):
+ 
+    while True:
+        playable_cards = [card for card in player_hand if can_play_card([card], discarded)]
+        if playable_cards:
+            card_to_play = random.choice(playable_cards)
+            player_hand.remove(card_to_play)
+            discarded.append(card_to_play)
+            print(f"{player_name} played {card_to_play}")
+
+            if card_to_play.split()[0] in ["draw2", "reverse", "skip", "wild", "drawfour"]:
+                return "special cards"
+            return player_hand, discarded
         else:
-            print(f"{player} passed")
+            #drawn_card = drawpile(deck, discarded)
+            drawn_card = deck.pop()
+            if drawn_card:
+                player_hand.append(drawn_card)
+                print(f"{player_name} drew a card")
+            return player_hand, discarded
 
-def can_play_card(card, top_card):
-    if not top_card:
+def can_play_card(player_hand, discarded):
+
+    if not discarded:
         return False
-    color_match = top_card[0] == card[0]
-    number_match = top_card[1] == card[1]
-    wild_match = card[0] in ["wild", "drawfour"]
-    return color_match or number_match or wild_match
 
-def game_play():
+    top_card = discarded[-1]
+    print(discarded)
+    top_card_split = top_card.split(" ")
+    print(top_card_split)
+    top_card_colour = top_card_split[0]
+    top_card_value = top_card_split[1]
+    for card in player_hand:
+        card_split = card.split(" ")
+        card_colour = card_split[0]
+        card_value = card_split[1]
+        color_match = top_card_colour == card_colour
+        number_match = top_card_value == card_value
+        wild_match = card_colour in ["wild", "drawfour"]
+        if color_match or number_match or wild_match:
+            return True
+    return False
+
+
     #initializing
 
-    deck = buildDeck()
+deck = buildDeck()
+shuffleDeck(deck)
+print(''' _    _  ____  __    ___  _____  __  __  ____    ____  _____    __  __  _  _  _____ 
+( \/\/ )( ___)(  )  / __)(  _  )(  \/  )( ___)  (_  _)(  _  )  (  )(  )( \( )(  _  )
+ )    (  )__)  )(__( (__  )(_)(  )    (  )__)     )(   )(_)(    )(__)(  )  (  )(_)( 
+(__/\__)(____)(____)\___)(_____)(_/\/\_)(____)   (__) (_____)  (______)(_)\_)(_____)
+
+''')
+players = enterPlayers()
+dealHands(deck, players)
+discardpile = []
+discarded = list()
+drawpile = []
+direction = 1
+#    player_hand = players[player_name]
+
+#start game with first card
+first_card = deck.pop()
+while first_card[0] in ["wild", "drawfour"]:
+    deck.append(first_card)
     shuffleDeck(deck)
-    players = enterPlayers()
-    dealHands(deck, players)
-    discarded = []
-    direction = 1
-
-    #start game with first card
     first_card = deck.pop()
-    while first_card[0] in ["wild", "drawfour"]:
-        deck.append(first_card)
-        shuffleDeck(deck)
-        first_card = deck.pop()
-    discarded.append(first_card)
-    print(f"The First card played: {first_card}")
+discarded.append(first_card)
+top_card = first_card
+print(f"The First card played: {first_card}")
 
-    #main game loop
-    current_player = 0
-    while True:
-        player_name = list(players.keys())[current_player]
-        print(f"\nIt's {player_name}'s turn.")
-        print(f"Top Card: {discarded[-1]}")
+#main game loop
+current_player = 0
+gameplaying = True
+while gameplaying:
 
-        if player_name.startswith("Computer_"):
-            action = computer_action(players, discarded, deck, player_name)
+    player_names = list(players.keys())
+    player_name = player_names[current_player]
+    player_hand = players[player_name]
+    print("#"*100)
+    print(f"\nIt's {player_name}'s turn.")
+    print("="*100)
+    print(f"Top Card: {discarded[-1]}")
+    print("="*100)
+
+    if player_name.startswith("Computer_"):
+        action = computer_action(players, discarded, drawpile, player_hand, player_name)
+    else:
+        action = playeractions(players, discarded, drawpile, player_hand, player_name)
+    if len(player_hand) == 0:
+        print(f"{player_name} WINS!!!")
+
+        gameplaying = False
+
+    #handle special cards
+    if action == "special cards":
+        result = specialcards(discarded[-1], current_player, players, deck, discarded, direction)
+        if isinstance(result, tuple):
+            current_player, direction = result
         else:
-            action = playeractions(players, discarded, deck, player_name, discarded)
+            current_player = result
+    else:
+        #move to next player
+        current_player = (current_player + direction) % len(players)
 
-        #check for win
-        if len(players[player_name]) == 0:
-            print(f"{player_name} WINS!!!")
-            break
+    if len(deck) == 0:
+        deck = refill_deck(discarded)
+    top_card = discarded[-1]
+    print("#"*100)  
+print('''.------..------..------.
+|U.--. ||N.--. ||O.--. |
+| (\/) || :(): || :/\: |
+| :\/: || ()() || :\/: |
+| '--'U|| '--'N|| '--'O|
+`------'`------'`------''')
 
-        #handle special cards
-        if action == "special cards":
-            result = specialcards(discarded[-1], current_player, players, deck, discarded, direction)
-            if isinstance(result, tuple):
-                current_player, direction = result
-            else:
-                current_player = result
-        else:
-            #move to next player
-            current_player = (current_player + direction) % len(players)
-
-        if len(deck) == 0:
-            deck = refill_deck(discarded)
-
-    print("!!!UNO!!!")
-
-game_play()
