@@ -2,6 +2,7 @@ import random
 
 
 def buildDeck():
+    '''Builds a standard UNO deck with numbers, action cards, and wild cards.'''
     deck = []
     colours = ["red", "green", "blue", "yellow"]
     numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
@@ -26,7 +27,7 @@ def buildDeck():
     
     return deck
 
-#special cards func
+
 def specialcards(card, current_player, players, deck, discarded, direction):
     next_player = (current_player + direction) % len(players)
     card_type = card.split()[1] if " " in card else card
@@ -223,25 +224,31 @@ def computer_action(players, player_hand, discarded, deck, player_name):
             return player_hand, discarded
 
 def can_play_card(player_hand, discarded):
-
     if not discarded:
         return False
 
     top_card = discarded[-1]
-    print(discarded)
     top_card_split = top_card.split(" ")
-    print(top_card_split)
     top_card_colour = top_card_split[0]
-    top_card_value = top_card_split[1]
+    top_card_value = top_card_split[1] if len(top_card_split) > 1 else None
+
     for card in player_hand:
         card_split = card.split(" ")
         card_colour = card_split[0]
-        card_value = card_split[1]
-        color_match = top_card_colour == card_colour
-        number_match = top_card_value == card_value
-        wild_match = card_colour in ["wild", "drawfour"]
-        if color_match or number_match or wild_match:
+        card_value = card_split[1] if len(card_split) > 1 else None
+
+        # Wild cards can always be played
+        if card_colour in ["wild", "drawfour"]:
             return True
+
+        # If top card is wild/drawfour, only color match or another wild/drawfour is valid
+        if top_card_colour in ["wild", "drawfour"]:
+            continue  # Only wilds can be played on wilds
+
+        # Color or value match
+        if card_colour == top_card_colour or (card_value and card_value == top_card_value):
+            return True
+
     return False
 
 
@@ -291,6 +298,7 @@ while gameplaying:
         action = computer_action(players, discarded, drawpile, player_hand, player_name)
     else:
         action = playeractions(players, discarded, drawpile, player_hand, player_name)
+        
     if len(player_hand) == 0:
         print(f"{player_name} WINS!!!")
 
